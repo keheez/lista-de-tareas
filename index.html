@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tareas</title>
+  <!-- Incluye los estilos de Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex justify-center items-center h-screen bg-gray-100">
+  <div class="w-96 bg-white p-6 rounded-lg shadow">
+    <h1 class="text-2xl font-bold mb-4">Lista de Tareas</h1>
+
+    <!-- Lista de tareas -->
+    <ul id="task-list" class="space-y-4">
+      <!-- Ejemplo de una tarea -->
+      <li class="flex items-center">
+        <input type="checkbox" class="mr-2">
+        <span class="flex-grow">Tarea 1</span>
+        <button class="text-blue-500 mr-4">Modificar</button>
+        <button class="text-red-500">Eliminar</button>
+      </li>
+    </ul>
+
+    <!-- Formulario para agregar una nueva tarea -->
+    <form id="add-task-form" class="flex mt-4">
+      <input type="text" id="task-input" class="flex-grow rounded-l-lg border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500" placeholder="Agregar una tarea">
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r-lg ">Agregar</button>
+    </form>
+
+    <input type="text" id="search-input" class="rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500" placeholder="Buscar tareas">
+<!-- Botón de alternancia para exportar en excel -->
+    <button id="export-button" class="bg-green-500 text-white px-5 py-2 rounded">Exportar a Excel</button>
+        
+
+        </button>
+        
+  </div>
+
+
+  <!-- Agrega los scripts para interactuar con la lista de tareas -->
+  <script>
+    // Función para agregar una tarea a la lista
+    function addTask() {
+      const taskInput = document.getElementById('task-input');
+      const taskList = document.getElementById('task-list');
+      const taskNames = taskList.querySelectorAll('span');
+
+      if (taskInput.value.trim() === '') {
+        return;
+      }
+
+      const newTaskName = taskInput.value.trim();
+
+      // Verifica si la tarea ya existe en la lista
+      for (let i = 0; i < taskNames.length; i++) {
+        if (taskNames[i].innerText.toLowerCase() === newTaskName.toLowerCase()) {
+          alert('La tarea ya existe en la lista.');
+          return;
+        }
+      }
+
+      const taskItem = document.createElement('li');
+      taskItem.className = 'flex items-center';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'mr-2';
+
+      const taskName = document.createElement('span');
+      taskName.className = 'flex-grow';
+      taskName.innerText = newTaskName;
+
+      const modifyButton = document.createElement('button');
+      modifyButton.className = 'text-blue-500 mr-2';
+      modifyButton.innerText = 'Modificar';
+      modifyButton.addEventListener('click', modifyTask);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.className = 'text-red-500';
+      deleteButton.innerText = 'Eliminar';
+      deleteButton.addEventListener('click', deleteTask);
+
+      taskItem.appendChild(checkbox);
+      taskItem.appendChild(taskName);
+      taskItem.appendChild(modifyButton);
+      taskItem.appendChild(deleteButton);
+      taskList.appendChild(taskItem);
+
+      taskInput.value = '';
+    }
+
+    // Función para modificar una tarea existente
+    function modifyTask(e) {
+      const taskItem = e.target.parentNode;
+      const taskName = taskItem.querySelector('span');
+      const newTaskName = prompt('Ingrese el nuevo nombre de la tarea:', taskName.innerText);
+
+      if (newTaskName !== null && newTaskName.trim() !== '') {
+        taskName.innerText = newTaskName.trim();
+      }
+    }
+
+    // Función para eliminar una tarea de la lista
+    function deleteTask(e) {
+      const taskItem = e.target.parentNode;
+      const taskList = document.getElementById('task-list');
+      taskList.removeChild(taskItem);
+    }
+
+    // Escucha el evento de envío del formulario
+    const addTaskForm = document.getElementById('add-task-form');
+    addTaskForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      addTask();
+    });
+
+    // Escucha el evento de clic en el botón de modificar tarea
+    const taskList = document.getElementById('task-list');
+    taskList.addEventListener('click', function (e) {
+      if (e.target.classList.contains('text-blue-500')) {
+        modifyTask(e);
+      } else if (e.target.classList.contains('text-red-500')) {
+        deleteTask(e);
+      }
+    });
+
+    // ...
+
+    // Función para buscar tareas en la lista
+  function searchTasks() {
+    const searchInput = document.getElementById('search-input');
+    const taskList = document.getElementById('task-list');
+    const taskItems = taskList.getElementsByTagName('li');
+
+  const searchValue = searchInput.value.trim().toLowerCase();
+
+  for (let i = 0; i < taskItems.length; i++) {
+    const taskName = taskItems[i].querySelector('span');
+    const taskNameValue = taskName.innerText.toLowerCase();
+
+    if (taskNameValue.includes(searchValue)) {
+      taskItems[i].style.display = 'flex';
+    } else {
+      taskItems[i].style.display = 'none';
+    }
+  }
+}
+   // Importa la biblioteca xlsx
+const XLSX = require('xlsx');
+
+// Función para exportar los datos de la lista a un archivo .xltx
+function exportToExcel() {
+  // Obtén los datos de la lista
+  const taskList = document.getElementById('task-list');
+  const taskItems = taskList.getElementsByTagName('li');
+  
+  // Crea una matriz para almacenar los datos
+  const data = [];
+  
+  // Recorre los elementos de la lista y obtén los nombres de las tareas
+  for (let i = 0; i < taskItems.length; i++) {
+    const taskName = taskItems[i].querySelector('span').innerText;
+    data.push([taskName]);
+  }
+  
+  // Crea una nueva hoja de cálculo de Excel
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Lista de Tareas');
+  
+  // Genera el archivo .xltx y descárgalo
+  XLSX.writeFile(workbook, 'lista_tareas.xltx');
+}
+
+// Agrega el controlador de eventos para el botón de exportación
+const exportButton = document.getElementById('export-button');
+exportButton.addEventListener('click', exportToExcel);
+
+
+  </script>
+</body>
+</html>
